@@ -29,7 +29,6 @@ class Tank:
     
     def move(self, keys):
         if keys[pygame.K_w]:
-            y -= speed
             tank_img = pygame.transform.rotate(original_tank, 0)    # Hướng lên
         if keys[pygame.K_s]:
             y += speed
