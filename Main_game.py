@@ -38,7 +38,7 @@ class Tank(pygame.sprite.Sprite):
         self.image = self.original_image
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH // 2, HEIGHT // 2)
-        self.speed = 5
+        self.speed = 3
         self.turn_speed = 5
         self.angle = 0
 
@@ -82,7 +82,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.image = enemy_image
         self.rect = self.image.get_rect()
-        self.speed = 2
+        self.speed = 1
         
         # Chọn ngẫu nhiên một cạnh màn hình để xuất hiện
         edge = random.choice(['left', 'right', 'top', 'bottom'])
