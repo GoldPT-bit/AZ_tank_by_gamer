@@ -24,6 +24,8 @@ tank_image = pygame.image.load("Test_Picture\\Tank_tries.png").convert_alpha()
 tank_size = 50
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
+background = pygame.image.load("Picture\\background_grass.png").convert_alpha()
+
 projectile_image = pygame.Surface((10, 10))
 projectile_image.fill((255, 0, 0))
 
@@ -185,7 +187,7 @@ while True:
             sys.exit()
 
     # Vẽ mọi thứ lên màn hình
-    screen.fill(BLACK)
+    screen.blit(background, (0, 0))
     all_sprites.draw(screen)
 
     # Hiển thị điểm số
