@@ -19,18 +19,20 @@ clock = pygame.time.Clock()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-# Tải hình ảnh
+# Tải hình ảnh (đưa tất cả lên đầu)
 tank_image = pygame.image.load("Picture\\rouge\\rouge.png").convert_alpha()
 tank_size = 60
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
 background = pygame.image.load("Picture\\background_grass.png").convert_alpha()
 
-projectile_image = pygame.Surface((20, 20))  # Đạn 20x20 để dễ thấy
-projectile_image.fill((255, 0, 0))
+# Import ảnh đạn
+projectile_image = pygame.image.load("Picture\\dagger.png").convert_alpha()
+projectile_image = pygame.transform.scale(projectile_image, (70, 70))  # Tùy chỉnh kích thước
 
-enemy_image = pygame.Surface((40, 40))
-enemy_image.fill((255, 0, 0))
+# Import ảnh kẻ thù
+enemy_image = pygame.image.load("Picture\\mob\\aimon1.png").convert_alpha()
+enemy_image = pygame.transform.scale(enemy_image, (70, 70))  # Tùy chỉnh kích thước
 
 # Lớp xe tăng
 class Tank(pygame.sprite.Sprite):
@@ -40,6 +42,9 @@ class Tank(pygame.sprite.Sprite):
         self.image = self.original_image
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH // 2, HEIGHT // 2)
+        # Tạo hitbox tùy chỉnh (ví dụ: nhỏ hơn hình ảnh)
+        self.hitbox = pygame.Rect(0, 0, 40, 40)  # Kích thước 40x40
+        self.hitbox.center = self.rect.center
         self.speed = 3
         self.flipped = False
         self.shoot_cooldown = 0
@@ -60,6 +65,8 @@ class Tank(pygame.sprite.Sprite):
         self.rect.clamp_ip(screen.get_rect())
         self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
         self.rect = self.image.get_rect(center=self.rect.center)
+        # Cập nhật vị trí hitbox
+        self.hitbox.center = self.rect.center
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
@@ -131,7 +138,7 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.x = random.randint(0, WIDTH)
             self.rect.y = HEIGHT
 
-    def update(self, tank):  # Giữ tham số tank
+    def update(self, tank):
         if self.rect.x < tank.rect.x:
             self.rect.x += self.speed
         elif self.rect.x > tank.rect.x:
@@ -190,7 +197,7 @@ while True:
     if shoot_cooldown > 0:
         shoot_cooldown -= 1
 
-    # Cập nhật tất cả sprite, truyền tank cho Enemy
+    # Cập nhật tất cả sprite
     tank.update()
     tank.shoot(enemies)
     for sprite in all_sprites:
@@ -199,16 +206,18 @@ while True:
         else:
             sprite.update()
 
-    # Kiểm tra va chạm
+    # Kiểm tra va chạm (dùng hitbox của tank)
     hits = pygame.sprite.groupcollide(projectiles, enemies, True, True)
     for proj, enemies_hit in hits.items():
         for enemy in enemies_hit:
             score += 10
 
-    if pygame.sprite.spritecollide(tank, enemies, False):
-        print("Trò chơi kết thúc")
-        pygame.quit()
-        sys.exit()
+    # Kiểm tra va chạm với hitbox của tank
+    for enemy in enemies:
+        if tank.hitbox.colliderect(enemy.rect):
+            print("Trò chơi kết thúc")
+            pygame.quit()
+            sys.exit()
 
     if not enemies:
         current_level += 1
@@ -223,7 +232,8 @@ while True:
     screen.blit(background, (0, 0))
     all_sprites.draw(screen)
 
-    # Debug: Vẽ vòng tròn đỏ tại vị trí mỗi đạn
+    # Debug: Vẽ hitbox của tank (màu xanh) và vị trí đạn (vòng tròn đỏ)
+    pygame.draw.rect(screen, (0, 255, 0), tank.hitbox, 2)  # Hitbox xanh
     for proj in projectiles:
         pygame.draw.circle(screen, (255, 0, 0), proj.rect.center, 5, 1)
 
