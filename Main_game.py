@@ -20,8 +20,8 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # Tải hình ảnh
-tank_image = pygame.image.load("Test_Picture\\Tank_tries.png").convert_alpha()
-tank_size = 50
+tank_image = pygame.image.load("Picture\\rouge.png").convert_alpha()
+tank_size = 40
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
 projectile_image = pygame.Surface((10, 10))
