@@ -20,8 +20,8 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # Tải hình ảnh
-tank_image = pygame.image.load("Picture\\rouge.png").convert_alpha()
-tank_size = 40
+tank_image = pygame.image.load("Picture\\rouge\\rouge.png").convert_alpha()
+tank_size = 60
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
 background = pygame.image.load("Picture\\background_grass.png").convert_alpha()
@@ -41,24 +41,38 @@ class Tank(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH // 2, HEIGHT // 2)
         self.speed = 3
-        self.turn_speed = 5
-        self.angle = 0
+        self.flipped = False  # Trạng thái lật ảnh
 
     def update(self):
         keys = pygame.key.get_pressed()
+
+        # Xử lý lật ảnh và di chuyển trái khi nhấn 'A'
         if keys[K_a]:
-            self.angle += self.turn_speed
+            self.flipped = True  # Lật ảnh
+            self.rect.x -= self.speed  # Di chuyển trái
+
+        # Khi không nhấn 'A', không lật ảnh
+        else:
+            self.flipped = False
+
+        # Di chuyển phải khi nhấn 'D'
         if keys[K_d]:
-            self.angle -= self.turn_speed
-        radian_angle = math.radians(self.angle)
+            self.rect.x += self.speed  # Di chuyển phải
+
+        # Di chuyển lên khi nhấn 'W'
         if keys[K_w]:
-            self.rect.x += self.speed * math.cos(radian_angle)
-            self.rect.y -= self.speed * math.sin(radian_angle)
+            self.rect.y -= self.speed  # Di chuyển lên
+
+        # Di chuyển xuống khi nhấn 'S'
         if keys[K_s]:
-            self.rect.x -= self.speed * math.cos(radian_angle)
-            self.rect.y += self.speed * math.sin(radian_angle)
+            self.rect.y += self.speed  # Di chuyển xuống
+
+        # Giới hạn trong màn hình
         self.rect.clamp_ip(screen.get_rect())
-        self.image = pygame.transform.rotate(self.original_image, self.angle)
+
+        # Xác định ảnh cơ sở (gốc hay lật)
+        self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
+        # Không cần xoay nữa, nên không dùng self.angle
         self.rect = self.image.get_rect(center=self.rect.center)
 
 # Lớp đạn (giữ nguyên)
