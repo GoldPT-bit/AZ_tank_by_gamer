@@ -155,7 +155,6 @@ while True:
                 projectiles.add(proj)
                 all_sprites.add(proj)
                 shoot_cooldown = 30
-
     if shoot_cooldown > 0:
         shoot_cooldown -= 1
 
