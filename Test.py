@@ -1,41 +1,235 @@
 import pygame
+from pygame.locals import *
 import sys
+import random
+import math
 
 # Khởi tạo Pygame
 pygame.init()
 
+# Thiết lập cửa sổ game
 WIDTH, HEIGHT = 600, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Xe Tăng AZ Replica")
+
+# Thiết lập đồng hồ để quản lý FPS
 clock = pygame.time.Clock()
 
-# Tải hai hình ảnh (thay đường dẫn bằng đường dẫn thực tế trên máy của bạn)
-image_A = pygame.image.load("Picture\\rouge.png")  # Đường dẫn đến ảnh A.png
-imgge_A_size = 40
-image_A = pygame.transform.scale(image_A, (imgge_A_size, imgge_A_size))
-image_B = pygame.transform.flip(image_A, True, False)
-# Điều chỉnh kích thước hình ảnh (ví dụ: 100x100 pixel)
+# Màu sắc
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 
-# Biến lưu hình ảnh hiện tại (mặc định là A.png)
-current_image = image_A
+# Tải hình ảnh
+tank_image = pygame.image.load("Picture\\rouge\\rouge.png").convert_alpha()
+tank_size = 60
+tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
-# Vòng lặp chính
+background = pygame.image.load("Picture\\background_grass.png").convert_alpha()
+
+projectile_image = pygame.Surface((20, 20))  # Đạn 20x20 để dễ thấy
+projectile_image.fill((255, 0, 0))
+
+enemy_image = pygame.Surface((40, 40))
+enemy_image.fill((255, 0, 0))
+
+# Lớp xe tăng
+class Tank(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.original_image = tank_image
+        self.image = self.original_image
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH // 2, HEIGHT // 2)
+        self.speed = 3
+        self.flipped = False
+        self.shoot_cooldown = 0
+
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if keys[K_a]:
+            self.flipped = True
+            self.rect.x -= self.speed
+        else:
+            self.flipped = False
+        if keys[K_d]:
+            self.rect.x += self.speed
+        if keys[K_w]:
+            self.rect.y -= self.speed
+        if keys[K_s]:
+            self.rect.y += self.speed
+        self.rect.clamp_ip(screen.get_rect())
+        self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
+        self.rect = self.image.get_rect(center=self.rect.center)
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+
+    def shoot(self, enemies):
+        if self.shoot_cooldown > 0:
+            return
+        closest_enemy = None
+        min_distance = float('inf')
+        for enemy in enemies:
+            if enemy.alive():
+                dx = enemy.rect.centerx - self.rect.centerx
+                dy = enemy.rect.centery - self.rect.centery
+                distance = math.hypot(dx, dy)
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_enemy = enemy
+        if closest_enemy and min_distance <= 200:
+            print(f"Bắn đạn! Khoảng cách: {min_distance:.2f}")
+            proj = Projectile(self.rect.centerx, self.rect.centery, closest_enemy)
+            projectiles.add(proj)
+            all_sprites.add(proj)
+            self.shoot_cooldown = 120
+
+# Lớp đạn
+class Projectile(pygame.sprite.Sprite):
+    def __init__(self, x, y, target):
+        super().__init__()
+        self.image = projectile_image
+        self.original_image = self.image
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.speed = 2
+        self.angle = 0
+        self.turn_speed = 5
+        self.target = target
+
+    def update(self):
+        self.angle += self.turn_speed
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
+        if self.target and self.target.alive():
+            dx = self.target.rect.centerx - self.rect.centerx
+            dy = self.target.rect.centery - self.rect.centery
+            distance = math.hypot(dx, dy)
+            if distance > 0:
+                self.rect.x += self.speed * dx / distance
+                self.rect.y += self.speed * dy / distance
+        if not screen.get_rect().contains(self.rect):
+            self.kill()
+
+# Lớp kẻ thù
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = enemy_image
+        self.rect = self.image.get_rect()
+        self.speed = 2
+        edge = random.choice(['left', 'right', 'top', 'bottom'])
+        if edge == 'left':
+            self.rect.x = -self.rect.width
+            self.rect.y = random.randint(0, HEIGHT)
+        elif edge == 'right':
+            self.rect.x = WIDTH
+            self.rect.y = random.randint(0, HEIGHT)
+        elif edge == 'top':
+            self.rect.x = random.randint(0, WIDTH)
+            self.rect.y = -self.rect.height
+        elif edge == 'bottom':
+            self.rect.x = random.randint(0, WIDTH)
+            self.rect.y = HEIGHT
+
+    def update(self, tank):  # Giữ tham số tank
+        if self.rect.x < tank.rect.x:
+            self.rect.x += self.speed
+        elif self.rect.x > tank.rect.x:
+            self.rect.x -= self.speed
+        if self.rect.y < tank.rect.y:
+            self.rect.y += self.speed
+        elif self.rect.y > tank.rect.y:
+            self.rect.y -= self.speed
+
+# Thiết lập các nhóm sprite
+all_sprites = pygame.sprite.Group()
+projectiles = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+
+# Tạo xe tăng
+tank = Tank()
+all_sprites.add(tank)
+
+# Hàm tải cấp độ
+def load_level(level):
+    enemies.empty()
+    for i in range(level['enemies']):
+        enemy = Enemy()
+        enemies.add(enemy)
+        all_sprites.add(enemy)
+
+# Định nghĩa các cấp độ
+levels = [
+    {'enemies': 5},
+    {'enemies': 10},
+    {'enemies': 15}
+]
+current_level = 0
+load_level(levels[current_level])
+
+# Thiết lập điểm số
+score = 0
+font = pygame.font.Font(None, 36)
+
+# Thời gian chờ bắn thủ công
+shoot_cooldown = 0
+
+# Vòng lặp game chính
 while True:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # Thoát khi nhấn nút đóng cửa sổ
+        if event.type == QUIT:
             pygame.quit()
             sys.exit()
-        elif event.type == pygame.KEYDOWN:  # Khi nhấn phím
-            if event.key == pygame.K_a:  # Nhấn phím 'A'
-                current_image = image_A
-            elif event.key == pygame.K_d:  # Nhấn phím 'D'
-                current_image = image_B
+        elif event.type == KEYDOWN:
+            if event.key == K_SPACE and shoot_cooldown == 0:
+                proj = Projectile(tank.rect.centerx, tank.rect.centery, None)
+                projectiles.add(proj)
+                all_sprites.add(proj)
+                shoot_cooldown = 30
 
-    # Xóa màn hình bằng màu đen
-    screen.fill((0, 0, 0))
-    # Hiển thị hình ảnh hiện tại ở giữa màn hình
-    screen.blit(current_image, (350, 250))
-    # Cập nhật màn hình
-    pygame.display.flip()
+    if shoot_cooldown > 0:
+        shoot_cooldown -= 1
 
-    # Giới hạn tốc độ khung hình (FPS)
+    # Cập nhật tất cả sprite, truyền tank cho Enemy
+    tank.update()
+    tank.shoot(enemies)
+    for sprite in all_sprites:
+        if isinstance(sprite, Enemy):
+            sprite.update(tank)
+        else:
+            sprite.update()
+
+    # Kiểm tra va chạm
+    hits = pygame.sprite.groupcollide(projectiles, enemies, True, True)
+    for proj, enemies_hit in hits.items():
+        for enemy in enemies_hit:
+            score += 10
+
+    if pygame.sprite.spritecollide(tank, enemies, False):
+        print("Trò chơi kết thúc")
+        pygame.quit()
+        sys.exit()
+
+    if not enemies:
+        current_level += 1
+        if current_level < len(levels):
+            load_level(levels[current_level])
+        else:
+            print("Bạn đã thắng!")
+            pygame.quit()
+            sys.exit()
+
+    # Vẽ mọi thứ lên màn hình
+    screen.blit(background, (0, 0))
+    all_sprites.draw(screen)
+
+    # Debug: Vẽ vòng tròn đỏ tại vị trí mỗi đạn
+    for proj in projectiles:
+        pygame.draw.circle(screen, (255, 0, 0), proj.rect.center, 5, 1)
+
+    # Hiển thị điểm số
+    score_text = font.render(f"Điểm: {score}", True, WHITE)
+    screen.blit(score_text, (10, 10))
+
+    pygame.display.update()
     clock.tick(60)
