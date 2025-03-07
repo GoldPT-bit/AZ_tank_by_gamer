@@ -88,7 +88,7 @@ class Tank(pygame.sprite.Sprite):
             proj = Projectile(self.rect.centerx, self.rect.centery, closest_enemy)
             projectiles.add(proj)
             all_sprites.add(proj)
-            self.shoot_cooldown = 120
+            self.shoot_cooldown = 90
 
 # Lớp đạn
 class Projectile(pygame.sprite.Sprite):
@@ -123,7 +123,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.image = enemy_image
         self.rect = self.image.get_rect()
-        self.speed = 2
+        self.speed = 1
         edge = random.choice(['left', 'right', 'top', 'bottom'])
         if edge == 'left':
             self.rect.x = -self.rect.width
@@ -169,7 +169,8 @@ def load_level(level):
 levels = [
     {'enemies': 5},
     {'enemies': 10},
-    {'enemies': 15}
+    {'enemies': 15},
+    {'enemies': 30},
 ]
 current_level = 0
 load_level(levels[current_level])
@@ -230,6 +231,7 @@ while True:
 
     # Vẽ mọi thứ lên màn hình
     screen.blit(background, (0, 0))
+    
     all_sprites.draw(screen)
 
     # Debug: Vẽ hitbox của tank (màu xanh) và vị trí đạn (vòng tròn đỏ)
