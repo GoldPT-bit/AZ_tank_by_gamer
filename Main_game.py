@@ -8,7 +8,7 @@ import math
 pygame.init()
 
 # Thiết lập cửa sổ game
-WIDTH, HEIGHT = 600, 600
+WIDTH, HEIGHT = 1600, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Xe Tăng AZ Replica")
 
@@ -33,6 +33,12 @@ projectile_image = pygame.transform.scale(projectile_image, (70, 70))  # Tùy ch
 # Import ảnh kẻ thù
 enemy_image = pygame.image.load("Picture\\mob\\aimon1.png").convert_alpha()
 enemy_image = pygame.transform.scale(enemy_image, (70, 70))  # Tùy chỉnh kích thước
+
+def draw_background(self):
+        bg_width, bg_height = background.get_size()  # Lấy kích thước hình nền
+        for x in range(0, self.WIDTH, bg_width):  # Lặp theo chiều ngang
+            for y in range(0, self.HEIGHT, bg_height):  # Lặp theo chiều dọc
+                self.screen.blit(background, (x, y))
 
 # Lớp xe tăng
 class Tank(pygame.sprite.Sprite):
