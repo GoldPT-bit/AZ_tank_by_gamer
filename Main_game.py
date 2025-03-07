@@ -21,7 +21,7 @@ WHITE = (255, 255, 255)
 
 # Tải hình ảnh (đưa tất cả lên đầu)
 tank_image = pygame.image.load("Picture\\rouge\\rouge.png").convert_alpha()
-tank_size = 60
+tank_size = 40
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
 background = pygame.image.load("Picture\\background_grass.png").convert_alpha()
