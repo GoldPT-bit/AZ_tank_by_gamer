@@ -32,9 +32,6 @@ projectile_image.fill((255, 0, 0))
 enemy_image = pygame.Surface((40, 40))
 enemy_image.fill((255, 0, 0))
 
-coin_image = pygame.image.load("Picture\\coin\\coin1.png")
-coin_image = pygame.transform.scale(coin_image, (20, 20))
-
 # Lớp xe tăng (giữ nguyên)
 class Tank(pygame.sprite.Sprite):
     def __init__(self):
@@ -139,14 +136,30 @@ def spawn_coin():
     all_sprites.add(coin)
     coins.add(coin)
 
+COIN_WIDTH, COIN_HEIGHT = 40, 40
+
 # Lớp đồng xu (giữ nguyên)
 class Coin(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = coin_image  # Ảnh đồng xu
+
+        self.coin_frames = [pygame.image.load(f"Picture\\coin\\coin{i}.png") for i in range(1, 8)]
+        self.coin_frames = [pygame.transform.scale(frame, (COIN_WIDTH, COIN_HEIGHT)) for frame in self.coin_frames]
+        self.frame_index = 0
+        self.image = self.coin_frames[self.frame_index] #animation coin
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, WIDTH - self.rect.width)
         self.rect.y = random.randint(0, HEIGHT - self.rect.height)
+        self.animation_speed = 100  # Đổi frame sau mỗi 100ms
+        self.last_update = pygame.time.get_ticks()
+
+    def update(self):
+        # Cập nhật animation theo thời gian
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_update > self.animation_speed:
+            self.frame_index = (self.frame_index + 1) % len(self.coin_frames)  # Chuyển frame
+            self.image = self.coin_frames[self.frame_index]  # Cập nhật hình ảnh
+            self.last_update = current_time  # Reset thời gian
 
 # Thiết lập các nhóm sprite
 all_sprites = pygame.sprite.Group()
@@ -208,6 +221,9 @@ while True:
     projectiles.update()
     for enemy in enemies:
         enemy.update(tank)
+
+    # Cập nhật đồng xu 
+    coins.update()
 
     # Kiểm tra va chạm giữa xe tăng và đồng xu
     coin_hits = pygame.sprite.spritecollide(tank, coins, True)
