@@ -69,7 +69,7 @@ class Tank(pygame.sprite.Sprite):
         self.rect.center = (MAP_WIDTH // 2, MAP_HEIGHT // 2)  # Bắt đầu giữa map
         self.hitbox = pygame.Rect(0, 0, 40, 40)
         self.hitbox.center = self.rect.center
-        self.speed = 3
+        self.speed = 2
         self.flipped = False
         self.shoot_cooldown = 0
 
@@ -78,9 +78,8 @@ class Tank(pygame.sprite.Sprite):
         if keys[K_a]:
             self.flipped = True
             self.rect.x -= self.speed
-        else:
-            self.flipped = False
         if keys[K_d]:
+            self.flipped = False
             self.rect.x += self.speed
         if keys[K_w]:
             self.rect.y -= self.speed
