@@ -75,18 +75,29 @@ class Tank(pygame.sprite.Sprite):
 
     def update(self):
         keys = pygame.key.get_pressed()
+        move_vector = pygame.math.Vector2(0, 0)
+
         if keys[K_a]:
             self.flipped = True
-            self.rect.x -= self.speed
+            move_vector.x -= 1
         if keys[K_d]:
             self.flipped = False
-            self.rect.x += self.speed
+            move_vector.x += 1
         if keys[K_w]:
-            self.rect.y -= self.speed
+            move_vector.y -= 1
         if keys[K_s]:
-            self.rect.y += self.speed
-        # Giới hạn trong map thay vì screen
+            move_vector.y += 1
+
+        # Chuẩn hóa vector nếu có di chuyển
+        if move_vector.length() > 0:
+            move_vector = move_vector.normalize() * self.speed
+
+        self.rect.x += move_vector.x
+        self.rect.y += move_vector.y
+
+        # Giới hạn trong bản đồ
         self.rect.clamp_ip(pygame.Rect(0, 0, MAP_WIDTH, MAP_HEIGHT))
+
         self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
         self.rect = self.image.get_rect(center=self.rect.center)
         self.hitbox.center = self.rect.center
@@ -213,15 +224,6 @@ while True:
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-        elif event.type == KEYDOWN:
-            if event.key == K_SPACE and shoot_cooldown == 0:
-                proj = Projectile(tank.rect.centerx, tank.rect.centery, None)
-                projectiles.add(proj)
-                all_sprites.add(proj)
-                shoot_cooldown = 30
-
-    if shoot_cooldown > 0:
-        shoot_cooldown -= 1
 
     # Cập nhật
     tank.update()
