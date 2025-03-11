@@ -215,8 +215,6 @@ load_level(levels[current_level])
 score = 0
 font = pygame.font.Font(None, 36)
 
-# Thời gian chờ bắn thủ công
-shoot_cooldown = 0
 
 # Vòng lặp game chính
 while True:
@@ -256,8 +254,8 @@ while True:
             pygame.quit()
             sys.exit()
 
-    # Vẽ
-    screen.fill(BLACK)
+
+
     screen.blit(background, camera.camera.topleft)  # Vẽ background với offset camera
     
     for sprite in all_sprites:
