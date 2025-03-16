@@ -8,7 +8,7 @@ import math
 pygame.init()
 
 # Thiết lập cửa sổ game
-WIDTH, HEIGHT = 1500, 700
+WIDTH, HEIGHT = 1300, 700
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Xe Tăng AZ Replica")
 
@@ -28,11 +28,25 @@ tank_image = pygame.image.load("Picture\\rouge\\rouge.png").convert_alpha()
 tank_size = 40
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
+# Tải các frame animation cho rouge
+tank_run_frames = []
+for i in range(1, 7):  # Từ 1 đến 6
+    frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{i}.png").convert_alpha()
+    frame = pygame.transform.scale(frame, (tank_size, tank_size))
+    tank_run_frames.append(frame)
+
 background = pygame.image.load("Picture\\Picture2.png").convert_alpha()
 background = pygame.transform.scale(background, (MAP_WIDTH, MAP_HEIGHT))  # Scale background theo map
 
 projectile_image = pygame.image.load("Picture\\dagger.png").convert_alpha()
 projectile_image = pygame.transform.scale(projectile_image, (30, 30))
+
+# Tải các frame animation cho aimon
+enemy_run_frames = []
+for i in range(1, 3):  # Từ 1 đến 2
+    frame = pygame.image.load(f"Picture\\mob\\aimon{i}.png").convert_alpha()
+    frame = pygame.transform.scale(frame, (30, 30))  # Kích thước kẻ thù là 30x30
+    enemy_run_frames.append(frame)
 
 enemy_image = pygame.image.load("Picture\\mob\\aimon1.png").convert_alpha()
 enemy_image = pygame.transform.scale(enemy_image, (30, 30))
@@ -63,16 +77,21 @@ class Camera:
 class Tank(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.original_image = tank_image  # Giả sử tank_image đã được định nghĩa trước
-        self.image = self.original_image
+        self.original_image = tank_image  # Hình ảnh tĩnh khi không di chuyển
+        self.run_frames = tank_run_frames  # Danh sách các frame animation chạy
+        self.image = self.original_image  # Hình ảnh ban đầu
         self.rect = self.image.get_rect()
-        self.rect.center = (MAP_WIDTH // 2, MAP_HEIGHT // 2)  # MAP_WIDTH và MAP_HEIGHT cần được định nghĩa
+        self.rect.center = (MAP_WIDTH // 2, MAP_HEIGHT // 2)
         self.hitbox = pygame.Rect(0, 0, 40, 40)
         self.hitbox.center = self.rect.center
         self.speed = 2
         self.flipped = False
-        self.shoot_cooldown = 0  # Thời gian cooldown hiện tại
+        self.shoot_cooldown = 0
         self.shoot_cooldown_time = 180  # 3 giây * 60 FPS = 180 frames
+        self.frame_index = 0  # Chỉ số frame hiện tại trong animation
+        self.animation_speed = 10  # Chuyển frame sau mỗi 10 FPS
+        self.animation_counter = 0  # Đếm số frame để chuyển animation
+        self.is_moving = False  # Trạng thái di chuyển
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -90,8 +109,11 @@ class Tank(pygame.sprite.Sprite):
         if keys[K_s]:
             move_vector.y += 1
 
+        # Kiểm tra xem xe tăng có di chuyển không
+        self.is_moving = move_vector.length() > 0
+
         # Chuẩn hóa vector di chuyển và áp dụng tốc độ
-        if move_vector.length() > 0:
+        if self.is_moving:
             move_vector = move_vector.normalize() * self.speed
 
         self.rect.x += move_vector.x
@@ -100,8 +122,20 @@ class Tank(pygame.sprite.Sprite):
         # Giới hạn xe tăng trong màn hình
         self.rect.clamp_ip(pygame.Rect(0, 0, MAP_WIDTH, MAP_HEIGHT))
 
-        # Cập nhật hình ảnh xe tăng (lật nếu cần)
-        self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
+        # Cập nhật animation nếu đang di chuyển
+        if self.is_moving:
+            self.animation_counter += 1
+            if self.animation_counter >= self.animation_speed:
+                self.animation_counter = 0  # Đặt lại counter
+                self.frame_index = (self.frame_index + 1) % len(self.run_frames)  # Chuyển frame tiếp theo
+            # Dùng frame animation hiện tại
+            current_frame = self.run_frames[self.frame_index]
+            self.image = pygame.transform.flip(current_frame, True, False) if self.flipped else current_frame
+        else:
+            # Nếu không di chuyển, dùng hình ảnh tĩnh
+            self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
+            self.frame_index = 0  # Reset frame về 0 khi dừng
+
         self.rect = self.image.get_rect(center=self.rect.center)
         self.hitbox.center = self.rect.center
 
@@ -129,9 +163,9 @@ class Tank(pygame.sprite.Sprite):
         # Bắn nếu có kẻ địch trong tầm
         if closest_enemy and min_distance <= 200:
             print(f"Bắn đạn! Khoảng cách: {min_distance:.2f}")
-            proj = Projectile(self.rect.centerx, self.rect.centery, closest_enemy)  # Giả sử Projectile đã được định nghĩa
-            projectiles.add(proj)  # Giả sử projectiles là một Sprite Group
-            all_sprites.add(proj)  # Giả sử all_sprites là một Sprite Group
+            proj = Projectile(self.rect.centerx, self.rect.centery, closest_enemy)
+            projectiles.add(proj)
+            all_sprites.add(proj)
             self.shoot_cooldown = self.shoot_cooldown_time  # Đặt lại cooldown sau khi bắn
 
 # Lớp đạn
@@ -154,7 +188,7 @@ class Projectile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
         
         if self.target and self.target.alive():
-            dx = self.target.rect.centerx - self.rect.centerx  # Sửa lỗi tính toán dx
+            dx = self.target.rect.centerx - self.rect.centerx
             dy = self.target.rect.centery - self.rect.centery
             distance = math.hypot(dx, dy)
             if distance > 0:
@@ -173,7 +207,9 @@ class Projectile(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = enemy_image
+        self.original_image = enemy_image  # Hình ảnh tĩnh
+        self.run_frames = enemy_run_frames  # Danh sách các frame animation chạy
+        self.image = self.run_frames[0]  # Frame đầu tiên làm hình ảnh ban đầu
         self.rect = self.image.get_rect()
         self.speed = 1
         edge = random.choice(['left', 'right', 'top', 'bottom'])
@@ -189,6 +225,9 @@ class Enemy(pygame.sprite.Sprite):
         elif edge == 'bottom':
             self.rect.x = random.randint(0, MAP_WIDTH)
             self.rect.y = MAP_HEIGHT
+        self.frame_index = 0  # Chỉ số frame hiện tại trong animation
+        self.animation_speed = 15  # Chuyển frame sau mỗi 15 FPS
+        self.animation_counter = 0  # Đếm số frame để chuyển animation
 
     def update(self, tank):
         if self.rect.x < tank.rect.x:
@@ -199,6 +238,13 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.y += self.speed
         elif self.rect.y > tank.rect.y:
             self.rect.y -= self.speed
+
+        # Cập nhật animation liên tục
+        self.animation_counter += 1
+        if self.animation_counter >= self.animation_speed:
+            self.animation_counter = 0  # Đặt lại counter
+            self.frame_index = (self.frame_index + 1) % len(self.run_frames)  # Chuyển frame tiếp theo
+            self.image = self.run_frames[self.frame_index]  # Cập nhật hình ảnh với frame mới
 
 # Thiết lập các nhóm sprite
 all_sprites = pygame.sprite.Group()
