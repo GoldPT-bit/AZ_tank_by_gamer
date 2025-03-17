@@ -176,7 +176,7 @@ class Projectile(pygame.sprite.Sprite):
         self.original_image = self.image
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.speed = 2
+        self.speed = 7
         self.angle = 0
         self.turn_speed = 5
         self.target = target
