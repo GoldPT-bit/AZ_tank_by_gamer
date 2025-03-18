@@ -176,7 +176,7 @@ class Projectile(pygame.sprite.Sprite):
         self.original_image = self.image
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.speed = 2
+        self.speed = 7
         self.angle = 0
         self.turn_speed = 5
         self.target = target
@@ -245,6 +245,15 @@ class Enemy(pygame.sprite.Sprite):
             self.animation_counter = 0  # Đặt lại counter
             self.frame_index = (self.frame_index + 1) % len(self.run_frames)  # Chuyển frame tiếp theo
             self.image = self.run_frames[self.frame_index]  # Cập nhật hình ảnh với frame mới
+
+
+    def update(self):
+        # Cập nhật animation theo thời gian
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_update > self.animation_speed:
+            self.frame_index = (self.frame_index + 1) % len(self.coin_frames)  # Chuyển frame
+            self.image = self.coin_frames[self.frame_index]  # Cập nhật hình ảnh
+            self.last_update = current_time  # Reset thời gian
 
 # Thiết lập các nhóm sprite
 all_sprites = pygame.sprite.Group()
