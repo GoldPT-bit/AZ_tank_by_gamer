@@ -265,7 +265,7 @@ while True:
     coin_spawn_time += 1
     if coin_spawn_time >= coin_spawn_interval:
         spawn_coin()
-        coin_spawn_time = 0 
+        coin_spawn_time = 0  
 
     # Cập nhật
     tank.update()
