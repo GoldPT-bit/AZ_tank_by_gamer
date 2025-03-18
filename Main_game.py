@@ -30,8 +30,10 @@ tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
 # Tải các frame animation cho rouge
 tank_run_frames = []
-for i in range(1, 7):  # Từ 1 đến 6
-    frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{i}.png").convert_alpha()
+for i in range(1, 13):  # Từ 1 đến 6
+    if i%2==1: 
+        frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{int(i/2)+1}.png").convert_alpha()
+    else: frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{int(i/2)}.png").convert_alpha()
     frame = pygame.transform.scale(frame, (tank_size, tank_size))
     tank_run_frames.append(frame)
 
