@@ -1,8 +1,20 @@
+# Download pygame, pyinstaller
 import pygame
 from pygame.locals import *
 import sys
 import random
 import math
+import os
+
+# Function to get the correct path for resources
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and PyInstaller"""
+    if hasattr(sys, '_MEIPASS'):
+        # Running as PyInstaller executable
+        return os.path.join(sys._MEIPASS, relative_path)
+    else:
+        # Running as script
+        return os.path.join(os.path.dirname(__file__), relative_path)
 
 # Khởi tạo Pygame
 pygame.init()
@@ -44,13 +56,13 @@ class Button:
 # **Hàm Menu**
 def menu(screen):
     try:
-        bg_img = pygame.image.load("Picture/menubg.png").convert()
-        ip_img = pygame.image.load("Picture/button/button1.png").convert_alpha()
-        ip_hover_img = pygame.image.load("Picture/button/button2.png").convert_alpha()
-        iip_img = pygame.image.load("Picture/button/button3.png").convert_alpha()
-        iip_hover_img = pygame.image.load("Picture/button/button4.png").convert_alpha()
-        qt_img = pygame.image.load("Picture/button/button5.png").convert_alpha()
-        qt_hover_img = pygame.image.load("Picture/button/button6.png").convert_alpha()
+        bg_img = pygame.image.load(resource_path("Picture/menubg.png")).convert()
+        ip_img = pygame.image.load(resource_path("Picture/button/button1.png")).convert_alpha()
+        ip_hover_img = pygame.image.load(resource_path("Picture/button/button2.png")).convert_alpha()
+        iip_img = pygame.image.load(resource_path("Picture/button/button3.png")).convert_alpha()
+        iip_hover_img = pygame.image.load(resource_path("Picture/button/button4.png")).convert_alpha()
+        qt_img = pygame.image.load(resource_path("Picture/button/button5.png")).convert_alpha()
+        qt_hover_img = pygame.image.load(resource_path("Picture/button/button6.png")).convert_alpha()
     except pygame.error as e:
         print(f"Error loading images: {e}")
         return "quit"
@@ -86,16 +98,16 @@ def menu(screen):
 def pause(screen):
     red = (227, 172, 75)
     try:
-        font = pygame.font.Font("Fonts\\pxred.ttf", 36)
+        font = pygame.font.Font(resource_path("Fonts/pxred.ttf"), 36)
     except:
         font = pygame.font.Font(None, 36)
 
     try:
-        bg_img = pygame.image.load("Picture/menubg.png").convert()
-        qt_img = pygame.image.load("Picture\\button\\button5.png").convert_alpha()
-        qt_hover_img = pygame.image.load("Picture\\button\\button6.png").convert_alpha()
-        rt_img = pygame.image.load("Picture\\button\\button7.png").convert_alpha()
-        rt_hover_img = pygame.image.load("Picture\\button\\button8.png").convert_alpha()
+        bg_img = pygame.image.load(resource_path("Picture/menubg.png")).convert()
+        qt_img = pygame.image.load(resource_path("Picture/button/button5.png")).convert_alpha()
+        qt_hover_img = pygame.image.load(resource_path("Picture/button/button6.png")).convert_alpha()
+        rt_img = pygame.image.load(resource_path("Picture/button/button7.png")).convert_alpha()
+        rt_hover_img = pygame.image.load(resource_path("Picture/button/button8.png")).convert_alpha()
     except pygame.error as e:
         print(f"Error loading images: {e}")
         return "quit"
@@ -376,7 +388,7 @@ class Enemy(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.coin_frames = [pygame.image.load(f"Picture\\coin\\coin{i}.png") for i in range(1, 8)]
+        self.coin_frames = [pygame.image.load(resource_path(f"Picture/coin/coin{i}.png")) for i in range(1, 8)]
         self.coin_frames = [pygame.transform.scale(frame, (40, 40)) for frame in self.coin_frames]
         self.frame_index = 0
         self.image = self.coin_frames[self.frame_index]
@@ -405,42 +417,38 @@ MAP_HEIGHT = 7000
 tank_size = 40
 
 # Tải hình ảnh
-background = pygame.image.load("Picture\\Picture2.png").convert_alpha()
+background = pygame.image.load(resource_path("Picture/Picture2.png")).convert_alpha()
 background = pygame.transform.scale(background, (MAP_WIDTH, MAP_HEIGHT))
 
-tank_image = pygame.image.load("Picture\\rouge\\rouge.png").convert_alpha()
+tank_image = pygame.image.load(resource_path("Picture/rouge/rouge.png")).convert_alpha()
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 tank_run_frames = []
 for i in range(1, 7):
-    frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{i}.png").convert_alpha()
+    frame = pygame.image.load(resource_path(f"Picture/rouge/run/rouge_run{i}.png")).convert_alpha()
     frame = pygame.transform.scale(frame, (tank_size, tank_size))
     tank_run_frames.append(frame)
 
-tank2_image = pygame.image.load("Picture\\vikin\\vikin.png").convert_alpha()
+tank2_image = pygame.image.load(resource_path("Picture/vikin/vikin.png")).convert_alpha()
 tank2_image = pygame.transform.scale(tank2_image, (50, 50))
 tank2_run_frames = []
 for i in range(1, 7):
-    frame = pygame.image.load(f"Picture\\vikin\\run\\vikin_run{i}.png").convert_alpha()
+    frame = pygame.image.load(resource_path(f"Picture/vikin/run/vikin_run{i}.png")).convert_alpha()
     frame = pygame.transform.scale(frame, (50, 50))
     tank2_run_frames.append(frame)
 
-projectile_image = pygame.image.load("Picture\\dagger.png").convert_alpha()
+projectile_image = pygame.image.load(resource_path("Picture/dagger.png")).convert_alpha()
 projectile_image = pygame.transform.scale(projectile_image, (30, 30))
 
-projectile2_image = pygame.image.load("Picture\\axe.png").convert_alpha()
+projectile2_image = pygame.image.load(resource_path("Picture/axe.png")).convert_alpha()
 projectile2_image = pygame.transform.scale(projectile2_image, (30, 30))
 
-enemy_image = pygame.image.load("Picture\\mob\\aimon1.png").convert_alpha()
+enemy_image = pygame.image.load(resource_path("Picture/mob/aimon1.png")).convert_alpha()
 enemy_image = pygame.transform.scale(enemy_image, (30, 30))
 enemy_run_frames = []
 for i in range(1, 6):
-    frame = pygame.image.load(f"Picture\\mob\\aimon{i}.png").convert_alpha()
+    frame = pygame.image.load(resource_path(f"Picture/mob/aimon{i}.png")).convert_alpha()
     frame = pygame.transform.scale(frame, (30, 30))
     enemy_run_frames.append(frame)
-
-# Tải ảnh thanh kinh nghiệm
-exp_bar_image = pygame.image.load("Picture\\exp_bar\\exp_bar1.png").convert_alpha()
-exp_bar_image = pygame.transform.scale(exp_bar_image, (200, 20))
 
 # Khởi tạo tank theo lựa chọn
 if choice == "1p":
@@ -458,8 +466,6 @@ coins = pygame.sprite.Group()
 camera = Camera(MAP_WIDTH, MAP_HEIGHT)
 
 score = 0
-exp = 0  # Kinh nghiệm
-max_exp = 100  # Giá trị tối đa của thanh kinh nghiệm
 font = pygame.font.Font(None, 36)
 clock = pygame.time.Clock()
 
@@ -509,9 +515,6 @@ while True:
             if player_tank.hitbox.colliderect(coin.hitbox):
                 coin.kill()
                 score += 10
-                exp += 5  # Tăng kinh nghiệm khi nhặt xu
-                if exp >= max_exp:
-                    exp = 0  # Reset kinh nghiệm khi đầy thanh
                 break
 
     # Kiểm tra va chạm đạn và kẻ thù
@@ -534,15 +537,7 @@ while True:
     screen.blit(background, camera.camera.topleft)
     for sprite in all_sprites:
         screen.blit(sprite.image, camera.apply(sprite))
-    
-    # Vẽ điểm số
-    score_text = font.render(f"Điểm: {score}", True, WHITE)
+    score_text = font.render(f"Score: {score}", True, WHITE)
     screen.blit(score_text, (10, 10))
-    
-    # Vẽ thanh kinh nghiệm
-    screen.blit(exp_bar_image, (10, 50))  # Vị trí thanh kinh nghiệm
-    exp_width = (exp / max_exp) * 200  # Tính chiều rộng dựa trên tỷ lệ kinh nghiệm
-    pygame.draw.rect(screen, (0, 255, 0), (10, 50, exp_width, 20))  # Thanh kinh nghiệm màu xanh
-
     pygame.display.update()
     clock.tick(60)

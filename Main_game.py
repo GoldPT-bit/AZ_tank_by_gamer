@@ -1,3 +1,5 @@
+#Download pygame, pyinstaller
+
 import pygame
 from pygame.locals import *
 import sys
