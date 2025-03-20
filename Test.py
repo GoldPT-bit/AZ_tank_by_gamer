@@ -47,8 +47,9 @@ tank2_image = pygame.transform.scale(tank2_image, (50, 50))
 tank2_run_frames = []
 for i in range(1, 13):  # Từ 1 đến 6
     if i%2==1:
-        frame = pygame.image.load(f"Picture\\vikin\\run\\vikin_run{i}.png").convert_alpha()
-    else: frame = pygame.transform.scale(frame, (50, 50))
+        frame = pygame.image.load(f"Picture\\vikin\\run\\vikin_run{int(i/2)+1}.png").convert_alpha()
+    else: pygame.image.load(f"Picture\\vikin\\run\\vikin_run{int(i/2)}.png").convert_alpha()
+    frame = pygame.transform.scale(frame, (50, 50))
     tank2_run_frames.append(frame)
 
 # Tải hình nền
