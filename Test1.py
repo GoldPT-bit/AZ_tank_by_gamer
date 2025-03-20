@@ -28,10 +28,21 @@ tank_image = pygame.image.load("Picture\\rouge\\rouge.png").convert_alpha()
 tank_size = 40
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 
+# Hình ảnh exp bar
+exp_bar_bg = pygame.image.load("Picture\\exp_bar\\exp bar1.png").convert_alpha()
+exp_bar_fill = pygame.image.load("Picture\\exp_bar\\exp bar2.png").convert_alpha()
+
+exp_bar_width = 700  # Độ rộng 
+exp_bar_height = 35   # Độ cao
+exp_bar_bg = pygame.transform.scale(exp_bar_bg, (exp_bar_width, exp_bar_height))
+exp_bar_fill = pygame.transform.scale(exp_bar_fill, (exp_bar_width, exp_bar_height))
+
 # Tải các frame animation cho rouge
 tank_run_frames = []
-for i in range(1, 7):  # Từ 1 đến 6
-    frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{i}.png").convert_alpha()
+for i in range(1, 13):  # Từ 1 đến 6
+    if i%2==1: 
+        frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{int(i/2)+1}.png").convert_alpha()
+    else: frame = pygame.image.load(f"Picture\\rouge\\run\\rouge_run{int(i/2)}.png").convert_alpha()
     frame = pygame.transform.scale(frame, (tank_size, tank_size))
     tank_run_frames.append(frame)
 
@@ -263,6 +274,7 @@ class Coin(pygame.sprite.Sprite):
         self.animation_speed = 100  # Đổi frame sau mỗi 100ms
         self.last_update = pygame.time.get_ticks()
 
+
     def update(self):
         # Cập nhật animation theo thời gian
         current_time = pygame.time.get_ticks()
@@ -304,6 +316,10 @@ load_level(levels[current_level])
 score = 0
 font = pygame.font.Font(None, 36)
 
+exp = 0  # Điểm kinh nghiệm hiện tại
+level = 1  # Cấp độ hiện tại
+exp_to_next_level = 100  # EXP cần để lên cấp
+
 # Vòng lặp game chính
 while True:
     for event in pygame.event.get():
@@ -328,7 +344,15 @@ while True:
         if tank.hitbox.colliderect(coin.hitbox):
             coin.kill()
             score += 10  # Cộng điểm khi nhặt coin
+            exp += 20  # Nhận 20 EXP mỗi lần ăn coin
 
+        # Kiểm tra nếu đạt đủ EXP để lên cấp
+            if exp >= exp_to_next_level:
+                exp -= exp_to_next_level  # Giữ lại phần dư EXP
+                level += 1  # Tăng cấp
+                exp_to_next_level = int(exp_to_next_level * 1.2)  # EXP cần để lên cấp tiếp theo tăng 20%
+
+    
     # Kiểm tra va chạm
     hits = pygame.sprite.groupcollide(projectiles, enemies, True, True)
     for proj, enemies_hit in hits.items():
@@ -336,7 +360,6 @@ while True:
              coin = Coin(enemy.rect.centerx, enemy.rect.centery)
              all_sprites.add(coin)
              coins.add(coin)
-
 
     for enemy in enemies:
         if tank.hitbox.colliderect(enemy.rect):
@@ -368,5 +391,20 @@ while True:
     score_text = font.render(f"Điểm: {score}", True, WHITE)
     screen.blit(score_text, (10, 10))
 
-    pygame.display.update()
+    # Vẽ nền thanh EXP
+    screen.blit(exp_bar_bg, (10, 50))
+
+    # Cắt ảnh thanh EXP theo tỷ lệ
+    exp_ratio = exp / exp_to_next_level
+    exp_fill_width = int(exp_bar_fill.get_width() * exp_ratio)
+    exp_fill_cropped = exp_bar_fill.subsurface((0, 0, exp_fill_width, exp_bar_fill.get_height()))
+
+    # Vẽ thanh EXP đầy
+    screen.blit(exp_fill_cropped, (10, 50))
+
+    # Hiển thị Level
+    level_text = font.render(f"Level: {level}", True, WHITE)
+    screen.blit(level_text, (10, 80))
+
+    pygame.display.update() 
     clock.tick(60)
