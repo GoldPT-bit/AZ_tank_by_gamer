@@ -248,21 +248,11 @@ class Enemy(pygame.sprite.Sprite):
             self.frame_index = (self.frame_index + 1) % len(self.run_frames)  # Chuyển frame tiếp theo
             self.image = self.run_frames[self.frame_index]  # Cập nhật hình ảnh với frame mới
 
-# Thời gian spqwn coin
-coin_spawn_time = 0
-coin_spawn_interval = 60 * 5
-
-# Hàm random đồng xu    
-def spawn_coin():
-    coin = Coin()
-    all_sprites.add(coin)
-    coins.add(coin)
-
 COIN_WIDTH, COIN_HEIGHT = 40, 40
 
 # Lớp đồng xu (giữ nguyên)
 class Coin(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
 
         self.coin_frames = [pygame.image.load(f"Picture\\coin\\coin{i}.png") for i in range(1, 8)]
@@ -270,10 +260,11 @@ class Coin(pygame.sprite.Sprite):
         self.frame_index = 0
         self.image = self.coin_frames[self.frame_index] #animation coin
         self.rect = self.image.get_rect()
-        self.rect.x = random.randint(0, WIDTH - self.rect.width)
-        self.rect.y = random.randint(0, HEIGHT - self.rect.height)
+        self.rect.center = (x, y)
+        self.hitbox = pygame.Rect(x - 20, y - 20, 40, 40)
         self.animation_speed = 100  # Đổi frame sau mỗi 100ms
         self.last_update = pygame.time.get_ticks()
+
 
     def update(self):
         # Cập nhật animation theo thời gian
@@ -323,12 +314,6 @@ while True:
             pygame.quit()
             sys.exit()
 
-# Sinh ra đồng xu ngẫu nhiên
-    coin_spawn_time += 1
-    if coin_spawn_time >= coin_spawn_interval:
-        spawn_coin()
-        coin_spawn_time = 0
-
     # Cập nhật
     tank.update()
     tank.shoot(enemies)
@@ -342,11 +327,18 @@ while True:
     # Cập nhật đồng xu 
     coins.update()
 
+    for coin in coins:
+        if tank.hitbox.colliderect(coin.hitbox):
+            coin.kill()
+            score += 10  # Cộng điểm khi nhặt coin
+    
     # Kiểm tra va chạm
     hits = pygame.sprite.groupcollide(projectiles, enemies, True, True)
     for proj, enemies_hit in hits.items():
         for enemy in enemies_hit:
-            score += 10
+             coin = Coin(enemy.rect.centerx, enemy.rect.centery)
+             all_sprites.add(coin)
+             coins.add(coin)
 
     for enemy in enemies:
         if tank.hitbox.colliderect(enemy.rect):
