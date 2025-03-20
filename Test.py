@@ -41,7 +41,7 @@ for i in range(1, 7):  # Từ 1 đến 6
 tank2_image = pygame.image.load("Picture\\vikin\\vikin.png").convert_alpha()
 tank2_image = pygame.transform.scale(tank2_image, (50, 50))
 
-# Tải các frame animation cho Tank2 (rouge2)
+# Tải các frame animation cho Tank2 (vikin)
 tank2_run_frames = []
 for i in range(1, 7):  # Từ 1 đến 6
     frame = pygame.image.load(f"Picture\\vikin\\run\\vikin_run{i}.png").convert_alpha()
@@ -291,40 +291,59 @@ class Projectile(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.start_time > 600:
             self.kill()
 
-# Lớp Enemy (kẻ thù)
+# Lớp Enemy (kẻ thù) - Đã sửa
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, camera):  # Nhận camera làm tham số
         super().__init__()
         self.original_image = enemy_image
         self.run_frames = enemy_run_frames
         self.image = self.run_frames[0]
         self.rect = self.image.get_rect()
         self.speed = 1
-        edge = random.choice(['left', 'right', 'top', 'bottom'])
-        if edge == 'left':
-            self.rect.x = -self.rect.width
-            self.rect.y = random.randint(0, MAP_HEIGHT)
-        elif edge == 'right':
-            self.rect.x = MAP_WIDTH
-            self.rect.y = random.randint(0, MAP_HEIGHT)
-        elif edge == 'top':
-            self.rect.x = random.randint(0, MAP_WIDTH)
-            self.rect.y = -self.rect.height
-        elif edge == 'bottom':
-            self.rect.x = random.randint(0, MAP_WIDTH)
-            self.rect.y = MAP_HEIGHT
+        
+        # Spawn ở các cạnh của camera, cách góc 50-100px
+        offset = random.randint(50, 100)  # Khoảng cách ngẫu nhiên từ 50-100px
+        side = random.choice(['left', 'right', 'top', 'bottom'])
+        
+        if side == 'left':
+            self.rect.x = camera.camera.left - offset
+            self.rect.y = random.randint(camera.camera.top, camera.camera.bottom)
+        elif side == 'right':
+            self.rect.x = camera.camera.right + offset
+            self.rect.y = random.randint(camera.camera.top, camera.camera.bottom)
+        elif side == 'top':
+            self.rect.x = random.randint(camera.camera.left, camera.camera.right)
+            self.rect.y = camera.camera.top - offset
+        elif side == 'bottom':
+            self.rect.x = random.randint(camera.camera.left, camera.camera.right)
+            self.rect.y = camera.camera.bottom + offset
+        
+        # Đảm bảo enemy không spawn bên ngoài bản đồ
+        self.rect.clamp_ip(pygame.Rect(0, 0, MAP_WIDTH, MAP_HEIGHT))
+        
         self.frame_index = 0
         self.animation_speed = 15
         self.animation_counter = 0
 
-    def update(self, tank):
-        if self.rect.x < tank.rect.x:
+    def update(self, tank, tank2):  # Nhận cả tank và tank2
+        # Tính khoảng cách đến tank và tank2
+        dist_to_tank = math.hypot(self.rect.x - tank.rect.x, self.rect.y - tank.rect.y)
+        dist_to_tank2 = math.hypot(self.rect.x - tank2.rect.x, self.rect.y - tank2.rect.y)
+        
+        # Chọn nhân vật gần hơn làm mục tiêu
+        if dist_to_tank < dist_to_tank2:
+            target = tank
+        else:
+            target = tank2
+        
+        # Di chuyển về phía mục tiêu
+        if self.rect.x < target.rect.x:
             self.rect.x += self.speed
-        elif self.rect.x > tank.rect.x:
+        elif self.rect.x > target.rect.x:
             self.rect.x -= self.speed
-        if self.rect.y < tank.rect.y:
+        if self.rect.y < target.rect.y:
             self.rect.y += self.speed
-        elif self.rect.y > tank.rect.y:
+        elif self.rect.y > target.rect.y:
             self.rect.y -= self.speed
 
         self.animation_counter += 1
@@ -339,11 +358,10 @@ COIN_WIDTH, COIN_HEIGHT = 40, 40
 class Coin(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-
         self.coin_frames = [pygame.image.load(f"Picture\\coin\\coin{i}.png") for i in range(1, 8)]
         self.coin_frames = [pygame.transform.scale(frame, (COIN_WIDTH, COIN_HEIGHT)) for frame in self.coin_frames]
         self.frame_index = 0
-        self.image = self.coin_frames[self.frame_index] #animation coin
+        self.image = self.coin_frames[self.frame_index]  # animation coin
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.hitbox = pygame.Rect(x - 20, y - 20, 40, 40)
@@ -358,7 +376,6 @@ class Coin(pygame.sprite.Sprite):
             self.image = self.coin_frames[self.frame_index]  # Cập nhật hình ảnh
             self.last_update = current_time  # Reset thời gian
 
-
 # Thiết lập các nhóm sprite
 all_sprites = pygame.sprite.Group()
 projectiles = pygame.sprite.Group()
@@ -372,11 +389,11 @@ tank2 = Tank2()
 all_sprites.add(tank2)
 camera = Camera(MAP_WIDTH, MAP_HEIGHT)
 
-# Hàm tải cấp độ
-def load_level(level):
+# Hàm tải cấp độ - Đã sửa
+def load_level(level, camera):  # Thêm tham số camera
     enemies.empty()
     for i in range(level['enemies']):
-        enemy = Enemy()
+        enemy = Enemy(camera)  # Truyền camera vào khi tạo enemy
         enemies.add(enemy)
         all_sprites.add(enemy)
 
@@ -388,7 +405,7 @@ levels = [
     {'enemies': 30},
 ]
 current_level = 0
-load_level(levels[current_level])
+load_level(levels[current_level], camera)  # Truyền camera vào lần đầu
 
 # Thiết lập điểm số
 score = 0
@@ -408,7 +425,7 @@ while True:
     tank2.shoot(enemies)
     for sprite in all_sprites:
         if isinstance(sprite, Enemy):
-            sprite.update(tank)
+            sprite.update(tank, tank2)  # Truyền cả tank và tank2
         else:
             sprite.update()
     camera.update(tank, tank2)
@@ -421,15 +438,13 @@ while True:
             coin.kill()
             score += 10  # Cộng điểm khi nhặt coin
 
-
     # Kiểm tra va chạm
     hits = pygame.sprite.groupcollide(projectiles, enemies, True, True)
     for proj, enemies_hit in hits.items():
         for enemy in enemies_hit:
-             coin = Coin(enemy.rect.centerx, enemy.rect.centery)
-             all_sprites.add(coin)
-             coins.add(coin)
-
+            coin = Coin(enemy.rect.centerx, enemy.rect.centery)
+            all_sprites.add(coin)
+            coins.add(coin)
 
     for enemy in enemies:
         if tank.hitbox.colliderect(enemy.rect) or tank2.hitbox.colliderect(enemy.rect):
@@ -440,7 +455,7 @@ while True:
     if not enemies:
         current_level += 1
         if current_level < len(levels):
-            load_level(levels[current_level])
+            load_level(levels[current_level], camera)  # Truyền camera khi tải cấp mới
         else:
             print("Bạn đã thắng!")
             pygame.quit()
@@ -452,8 +467,10 @@ while True:
     for sprite in all_sprites:
         screen.blit(sprite.image, camera.apply(sprite))
 
-    pygame.draw.rect(screen, (0, 255, 0), camera.apply_rect(tank.hitbox), 2)
-    pygame.draw.rect(screen, (0, 255, 0), camera.apply_rect(tank2.hitbox), 2)
+    # Đã xóa hai dòng vẽ hitbox màu xanh lá cây
+    # pygame.draw.rect(screen, (0, 255, 0), camera.apply_rect(tank.hitbox), 2)
+    # pygame.draw.rect(screen, (0, 255, 0), camera.apply_rect(tank2.hitbox), 2)
+    
     for proj in projectiles:
         pygame.draw.circle(screen, (255, 0, 0), camera.apply(proj).center, 5, 1)
 
