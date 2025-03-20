@@ -37,9 +37,6 @@ class Button:
 
 
 def menu(screen):
-    wht = (255, 255, 255)
-    blk = (0, 0, 0)
-
     bg_img = pygame.image.load("Picture/menubg.png").convert()
 
     ip_img = pygame.image.load("Picture\\button\\button1.png").convert_alpha()
@@ -54,10 +51,6 @@ def menu(screen):
     ip_but = Button(515, 200, ip_img, ip_hover_img, 0.1)
     iip_but = Button(515, 300, iip_img, iip_hover_img, 0.1)
     qt_but = Button(515, 400, qt_img, qt_hover_img, 0.1)
-
-    def drawtxt(txt, fnt, col, x, y):
-        img = fnt.render(txt, True, col)
-        screen.blit(img, (x, y))
 
     run = True
     while run:
@@ -76,4 +69,39 @@ def menu(screen):
 
         pygame.display.update()
 
-    pygame.quit()
+
+def pause(screen):
+    red = (227, 172, 75)
+    font = pygame.font.Font("Fonts\\pxred.ttf", 36)
+
+    bg_img = pygame.image.load("Picture/menubg.png").convert()
+
+    qt_img = pygame.image.load("Picture\\button\\button5.png").convert_alpha()
+    qt_hover_img = pygame.image.load("Picture\\button\\button6.png").convert_alpha()
+
+    rt_img = pygame.image.load("Picture\\button\\button7.png").convert_alpha()
+    rt_hover_img = pygame.image.load("Picture\\button\\button8.png").convert_alpha()
+
+    qt_but = Button(515, 300, qt_img, qt_hover_img, 0.1)
+    rt_but = Button(415, 300, rt_img, rt_hover_img, 0.1)
+
+    def drawtxt(txt, fnt, col, x, y):
+        img = fnt.render(txt, True, col)
+        screen.blit(img, (x, y))
+
+    run = True
+    while run:
+        screen.blit(bg_img, (0, 0))
+
+        drawtxt("Paused", font, red, 545, 50)
+
+        if rt_but.draw(screen):
+            return
+        if qt_but.draw(screen):
+            exit()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+        pygame.display.update()
