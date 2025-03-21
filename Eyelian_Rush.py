@@ -20,7 +20,7 @@ def resource_path(relative_path):
 pygame.init()
 
 # Thiết lập cửa sổ game
-WIDTH, HEIGHT = 1280, 720
+WIDTH, HEIGHT = 1280, 680
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Eyelian Rush")
 

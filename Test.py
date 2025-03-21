@@ -19,10 +19,10 @@ def resource_path(relative_path):
 # Khởi tạo Pygame
 pygame.init()
 
-# Thiết lập cửa sổ game
+# Thiết lập cửa sổ game có thể thay đổi kích thước
 WIDTH, HEIGHT = 1280, 720
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Game Menu")
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+pygame.display.set_caption("Eyelian Rush")
 
 # Màu sắc
 BLACK = (0, 0, 0)
@@ -67,9 +67,9 @@ def menu(screen):
         print(f"Error loading images: {e}")
         return "quit"
 
-    ip_but = Button(515, 200, ip_img, ip_hover_img, 0.1)
-    iip_but = Button(515, 300, iip_img, iip_hover_img, 0.1)
-    qt_but = Button(515, 400, qt_img, qt_hover_img, 0.1)
+    ip_but = Button(WIDTH // 2 - 100, HEIGHT // 2 - 100, ip_img, ip_hover_img, 0.1)
+    iip_but = Button(WIDTH // 2 - 100, HEIGHT // 2, iip_img, iip_hover_img, 0.1)
+    qt_but = Button(WIDTH // 2 - 100, HEIGHT // 2 + 100, qt_img, qt_hover_img, 0.1)
 
     font = pygame.font.Font(None, 36)
     clock = pygame.time.Clock()
@@ -79,8 +79,16 @@ def menu(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "quit"
+            if event.type == VIDEORESIZE:
+                global WIDTH, HEIGHT
+                WIDTH, HEIGHT = event.size
+                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                ip_but.rect.topleft = (WIDTH // 2 - 100, HEIGHT // 2 - 100)
+                iip_but.rect.topleft = (WIDTH // 2 - 100, HEIGHT // 2)
+                qt_but.rect.topleft = (WIDTH // 2 - 100, HEIGHT // 2 + 100)
 
-        screen.blit(bg_img, (0, 0))
+        bg_scaled = pygame.transform.scale(bg_img, (WIDTH, HEIGHT))
+        screen.blit(bg_scaled, (0, 0))
 
         if ip_but.draw(screen):
             return "1p"
@@ -112,8 +120,8 @@ def pause(screen):
         print(f"Error loading images: {e}")
         return "quit"
 
-    qt_but = Button(515, 300, qt_img, qt_hover_img, 0.1)
-    rt_but = Button(415, 300, rt_img, rt_hover_img, 0.1)
+    qt_but = Button(WIDTH // 2 + 50, HEIGHT // 2, qt_img, qt_hover_img, 0.1)
+    rt_but = Button(WIDTH // 2 - 150, HEIGHT // 2, rt_img, rt_hover_img, 0.1)
 
     def drawtxt(txt, fnt, col, x, y):
         img = fnt.render(txt, True, col)
@@ -121,8 +129,9 @@ def pause(screen):
 
     run = True
     while run:
-        screen.blit(bg_img, (0, 0))
-        drawtxt("Paused", font, red, 545, 50)
+        bg_scaled = pygame.transform.scale(bg_img, (WIDTH, HEIGHT))
+        screen.blit(bg_scaled, (0, 0))
+        drawtxt("Paused", font, red, WIDTH // 2 - 50, 50)
 
         if rt_but.draw(screen):
             return "resume"
@@ -132,8 +141,16 @@ def pause(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "quit"
+            if event.type == VIDEORESIZE:
+                global WIDTH, HEIGHT
+                WIDTH, HEIGHT = event.size
+                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                qt_but.rect.topleft = (WIDTH // 2 + 50, HEIGHT // 2)
+                rt_but.rect.topleft = (WIDTH // 2 - 150, HEIGHT // 2)
 
         pygame.display.update()
+
+    return "quit"
 
 # **Các lớp Game**
 class Camera:
@@ -470,8 +487,8 @@ font = pygame.font.Font(None, 36)
 clock = pygame.time.Clock()
 
 spawn_timer = 0
-spawn_interval = 3 * 60  # 3 giây * 60 FPS
-spawn_amount = 30
+spawn_interval = 1.5 * 60  # 1.5 giây * 60 FPS
+spawn_amount = 20
 max_score_to_spawn = 100
 
 # Vòng lặp game
@@ -486,6 +503,9 @@ while True:
                 if pause_choice == "quit":
                     pygame.quit()
                     sys.exit()
+        if event.type == VIDEORESIZE:
+            WIDTH, HEIGHT = event.size
+            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
     # Cập nhật tank và sprite
     for tank in player_tanks:
