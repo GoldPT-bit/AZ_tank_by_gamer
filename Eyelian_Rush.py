@@ -6,15 +6,17 @@ import random
 import math
 import os
 
+
 # Function to get the correct path for resources
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and PyInstaller"""
-    if hasattr(sys, '_MEIPASS'):
+    if hasattr(sys, "_MEIPASS"):
         # Running as PyInstaller executable
         return os.path.join(sys._MEIPASS, relative_path)
     else:
         # Running as script
         return os.path.join(os.path.dirname(__file__), relative_path)
+
 
 # Khởi tạo Pygame
 pygame.init()
@@ -28,13 +30,22 @@ pygame.display.set_caption("Eyelian Rush")
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
+# load icon
+icon = pygame.image.load(resource_path("Picture/rouge/rouge.png")).convert_alpha()
+pygame.display.set_icon(icon)
+
+
 # **Lớp Button**
 class Button:
     def __init__(self, x, y, image, hover_image, scale):
         width = image.get_width()
         height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-        self.hover_image = pygame.transform.scale(hover_image, (int(width * scale), int(height * scale)))
+        self.image = pygame.transform.scale(
+            image, (int(width * scale), int(height * scale))
+        )
+        self.hover_image = pygame.transform.scale(
+            hover_image, (int(width * scale), int(height * scale))
+        )
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.clicked = False
@@ -53,16 +64,29 @@ class Button:
             self.clicked = False
         return action
 
+
 # **Hàm Menu**
 def menu(screen):
     try:
         bg_img = pygame.image.load(resource_path("Picture/menubg.png")).convert()
-        ip_img = pygame.image.load(resource_path("Picture/button/button1.png")).convert_alpha()
-        ip_hover_img = pygame.image.load(resource_path("Picture/button/button2.png")).convert_alpha()
-        iip_img = pygame.image.load(resource_path("Picture/button/button3.png")).convert_alpha()
-        iip_hover_img = pygame.image.load(resource_path("Picture/button/button4.png")).convert_alpha()
-        qt_img = pygame.image.load(resource_path("Picture/button/button5.png")).convert_alpha()
-        qt_hover_img = pygame.image.load(resource_path("Picture/button/button6.png")).convert_alpha()
+        ip_img = pygame.image.load(
+            resource_path("Picture/button/button1.png")
+        ).convert_alpha()
+        ip_hover_img = pygame.image.load(
+            resource_path("Picture/button/button2.png")
+        ).convert_alpha()
+        iip_img = pygame.image.load(
+            resource_path("Picture/button/button3.png")
+        ).convert_alpha()
+        iip_hover_img = pygame.image.load(
+            resource_path("Picture/button/button4.png")
+        ).convert_alpha()
+        qt_img = pygame.image.load(
+            resource_path("Picture/button/button5.png")
+        ).convert_alpha()
+        qt_hover_img = pygame.image.load(
+            resource_path("Picture/button/button6.png")
+        ).convert_alpha()
     except pygame.error as e:
         print(f"Error loading images: {e}")
         return "quit"
@@ -74,7 +98,7 @@ def menu(screen):
     font = pygame.font.Font(None, 36)
     clock = pygame.time.Clock()
     run = True
-    
+
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -94,6 +118,7 @@ def menu(screen):
 
     return "quit"
 
+
 # **Hàm Pause**
 def pause(screen):
     red = (227, 172, 75)
@@ -104,10 +129,18 @@ def pause(screen):
 
     try:
         bg_img = pygame.image.load(resource_path("Picture/menubg.png")).convert()
-        qt_img = pygame.image.load(resource_path("Picture/button/button5.png")).convert_alpha()
-        qt_hover_img = pygame.image.load(resource_path("Picture/button/button6.png")).convert_alpha()
-        rt_img = pygame.image.load(resource_path("Picture/button/button7.png")).convert_alpha()
-        rt_hover_img = pygame.image.load(resource_path("Picture/button/button8.png")).convert_alpha()
+        qt_img = pygame.image.load(
+            resource_path("Picture/button/button5.png")
+        ).convert_alpha()
+        qt_hover_img = pygame.image.load(
+            resource_path("Picture/button/button6.png")
+        ).convert_alpha()
+        rt_img = pygame.image.load(
+            resource_path("Picture/button/button7.png")
+        ).convert_alpha()
+        rt_hover_img = pygame.image.load(
+            resource_path("Picture/button/button8.png")
+        ).convert_alpha()
     except pygame.error as e:
         print(f"Error loading images: {e}")
         return "quit"
@@ -134,6 +167,7 @@ def pause(screen):
                 return "quit"
 
         pygame.display.update()
+
 
 # **Các lớp Game**
 class Camera:
@@ -162,6 +196,7 @@ class Camera:
         x = max(-(self.width - WIDTH), x)
         y = max(-(self.height - HEIGHT), y)
         self.camera = pygame.Rect(x, y, self.width, self.height)
+
 
 class Tank(pygame.sprite.Sprite):
     def __init__(self):
@@ -207,9 +242,17 @@ class Tank(pygame.sprite.Sprite):
                 self.animation_counter = 0
                 self.frame_index = (self.frame_index + 1) % len(self.run_frames)
             current_frame = self.run_frames[self.frame_index]
-            self.image = pygame.transform.flip(current_frame, True, False) if self.flipped else current_frame
+            self.image = (
+                pygame.transform.flip(current_frame, True, False)
+                if self.flipped
+                else current_frame
+            )
         else:
-            self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
+            self.image = (
+                pygame.transform.flip(self.original_image, True, False)
+                if self.flipped
+                else self.original_image
+            )
             self.frame_index = 0
         self.rect = self.image.get_rect(center=self.rect.center)
         self.hitbox.center = self.rect.center
@@ -220,7 +263,7 @@ class Tank(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             return
         closest_enemy = None
-        min_distance = float('inf')
+        min_distance = float("inf")
         for enemy in enemies:
             if enemy.alive():
                 dx = enemy.rect.centerx - self.rect.centerx
@@ -230,10 +273,13 @@ class Tank(pygame.sprite.Sprite):
                     min_distance = distance
                     closest_enemy = enemy
         if closest_enemy and min_distance <= 200:
-            proj = Projectile(self.rect.centerx, self.rect.centery, closest_enemy, projectile_image)
+            proj = Projectile(
+                self.rect.centerx, self.rect.centery, closest_enemy, projectile_image
+            )
             projectiles.add(proj)
             all_sprites.add(proj)
             self.shoot_cooldown = self.shoot_cooldown_time
+
 
 class Tank2(pygame.sprite.Sprite):
     def __init__(self):
@@ -279,9 +325,17 @@ class Tank2(pygame.sprite.Sprite):
                 self.animation_counter = 0
                 self.frame_index = (self.frame_index + 1) % len(self.run_frames)
             current_frame = self.run_frames[self.frame_index]
-            self.image = pygame.transform.flip(current_frame, True, False) if self.flipped else current_frame
+            self.image = (
+                pygame.transform.flip(current_frame, True, False)
+                if self.flipped
+                else current_frame
+            )
         else:
-            self.image = pygame.transform.flip(self.original_image, True, False) if self.flipped else self.original_image
+            self.image = (
+                pygame.transform.flip(self.original_image, True, False)
+                if self.flipped
+                else self.original_image
+            )
             self.frame_index = 0
         self.rect = self.image.get_rect(center=self.rect.center)
         self.hitbox.center = self.rect.center
@@ -292,7 +346,7 @@ class Tank2(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             return
         closest_enemy = None
-        min_distance = float('inf')
+        min_distance = float("inf")
         for enemy in enemies:
             if enemy.alive():
                 dx = enemy.rect.centerx - self.rect.centerx
@@ -302,10 +356,13 @@ class Tank2(pygame.sprite.Sprite):
                     min_distance = distance
                     closest_enemy = enemy
         if closest_enemy and min_distance <= 200:
-            proj = Projectile(self.rect.centerx, self.rect.centery, closest_enemy, projectile2_image)
+            proj = Projectile(
+                self.rect.centerx, self.rect.centery, closest_enemy, projectile2_image
+            )
             projectiles.add(proj)
             all_sprites.add(proj)
             self.shoot_cooldown = self.shoot_cooldown_time
+
 
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, x, y, target, projectile_image):
@@ -336,6 +393,7 @@ class Projectile(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.start_time > 600:
             self.kill()
 
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, camera):
         super().__init__()
@@ -344,25 +402,25 @@ class Enemy(pygame.sprite.Sprite):
         self.image = self.run_frames[0]
         self.rect = self.image.get_rect()
         self.speed = 1
-        
+
         # Spawn ở các cạnh của camera
         offset = 0
-        side = random.choice(['left', 'right', 'top', 'bottom'])
-        if side == 'left':
+        side = random.choice(["left", "right", "top", "bottom"])
+        if side == "left":
             self.rect.x = camera.camera.left - offset
             self.rect.y = random.randint(camera.camera.top, camera.camera.bottom)
-        elif side == 'right':
+        elif side == "right":
             self.rect.x = camera.camera.right + offset
             self.rect.y = random.randint(camera.camera.top, camera.camera.bottom)
-        elif side == 'top':
+        elif side == "top":
             self.rect.x = random.randint(camera.camera.left, camera.camera.right)
             self.rect.y = camera.camera.top - offset
-        elif side == 'bottom':
+        elif side == "bottom":
             self.rect.x = random.randint(camera.camera.left, camera.camera.right)
             self.rect.y = camera.camera.bottom + offset
-        
+
         self.rect.clamp_ip(pygame.Rect(0, 0, MAP_WIDTH, MAP_HEIGHT))
-        
+
         self.frame_index = 0
         self.animation_speed = 15
         self.animation_counter = 0
@@ -370,7 +428,10 @@ class Enemy(pygame.sprite.Sprite):
     def update(self, player_tanks):
         if not player_tanks:
             return
-        closest_tank = min(player_tanks, key=lambda t: math.hypot(self.rect.x - t.rect.x, self.rect.y - t.rect.y))
+        closest_tank = min(
+            player_tanks,
+            key=lambda t: math.hypot(self.rect.x - t.rect.x, self.rect.y - t.rect.y),
+        )
         if self.rect.x < closest_tank.rect.x:
             self.rect.x += self.speed
         elif self.rect.x > closest_tank.rect.x:
@@ -385,11 +446,17 @@ class Enemy(pygame.sprite.Sprite):
             self.frame_index = (self.frame_index + 1) % len(self.run_frames)
             self.image = self.run_frames[self.frame_index]
 
+
 class Coin(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.coin_frames = [pygame.image.load(resource_path(f"Picture/coin/coin{i}.png")) for i in range(1, 8)]
-        self.coin_frames = [pygame.transform.scale(frame, (40, 40)) for frame in self.coin_frames]
+        self.coin_frames = [
+            pygame.image.load(resource_path(f"Picture/coin/coin{i}.png"))
+            for i in range(1, 8)
+        ]
+        self.coin_frames = [
+            pygame.transform.scale(frame, (40, 40)) for frame in self.coin_frames
+        ]
         self.frame_index = 0
         self.image = self.coin_frames[self.frame_index]
         self.rect = self.image.get_rect()
@@ -404,6 +471,7 @@ class Coin(pygame.sprite.Sprite):
             self.frame_index = (self.frame_index + 1) % len(self.coin_frames)
             self.image = self.coin_frames[self.frame_index]
             self.last_update = current_time
+
 
 # **Logic chính**
 choice = menu(screen)
@@ -424,19 +492,27 @@ tank_image = pygame.image.load(resource_path("Picture/rouge/rouge.png")).convert
 tank_image = pygame.transform.scale(tank_image, (tank_size, tank_size))
 tank_run_frames = []
 for i in range(1, 7):
-    frame = pygame.image.load(resource_path(f"Picture/rouge/run/rouge_run{i}.png")).convert_alpha()
+    frame = pygame.image.load(
+        resource_path(f"Picture/rouge/run/rouge_run{i}.png")
+    ).convert_alpha()
     frame = pygame.transform.scale(frame, (tank_size, tank_size))
     tank_run_frames.append(frame)
 
-tank2_image = pygame.image.load(resource_path("Picture/vikin/vikin.png")).convert_alpha()
+tank2_image = pygame.image.load(
+    resource_path("Picture/vikin/vikin.png")
+).convert_alpha()
 tank2_image = pygame.transform.scale(tank2_image, (50, 50))
 tank2_run_frames = []
 for i in range(1, 7):
-    frame = pygame.image.load(resource_path(f"Picture/vikin/run/vikin_run{i}.png")).convert_alpha()
+    frame = pygame.image.load(
+        resource_path(f"Picture/vikin/run/vikin_run{i}.png")
+    ).convert_alpha()
     frame = pygame.transform.scale(frame, (50, 50))
     tank2_run_frames.append(frame)
 
-projectile_image = pygame.image.load(resource_path("Picture/dagger.png")).convert_alpha()
+projectile_image = pygame.image.load(
+    resource_path("Picture/dagger.png")
+).convert_alpha()
 projectile_image = pygame.transform.scale(projectile_image, (30, 30))
 
 projectile2_image = pygame.image.load(resource_path("Picture/axe.png")).convert_alpha()
@@ -446,7 +522,9 @@ enemy_image = pygame.image.load(resource_path("Picture/mob/aimon1.png")).convert
 enemy_image = pygame.transform.scale(enemy_image, (30, 30))
 enemy_run_frames = []
 for i in range(1, 6):
-    frame = pygame.image.load(resource_path(f"Picture/mob/aimon{i}.png")).convert_alpha()
+    frame = pygame.image.load(
+        resource_path(f"Picture/mob/aimon{i}.png")
+    ).convert_alpha()
     frame = pygame.transform.scale(frame, (30, 30))
     enemy_run_frames.append(frame)
 
